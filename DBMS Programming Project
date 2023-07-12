@@ -1,0 +1,44 @@
+#Group 1/7 – The product p1 is deleted from Product and Stock.
+#Syd Levy and Ryan Kelly
+
+#PyCharm - IDE installer for "psycopg2" and "tabulate."
+import psycopg2
+from tabulate import tabulate
+
+print("Transaction Start")
+
+connection = psycopg2.connect(
+    host="localhost",
+    database="postgres",
+    user="postgres",
+    password="L************!")
+
+print(connection)
+
+#Isolation: Makes transactions serializeable with a stricter level of isolation.
+connection.set_isolation_level(3);
+
+#Atomicity: Groups transactions. Each statement is no longer treated as a standalone transaction, but as a single executable cluster.
+connection.autocommit = False;
+
+try:
+    cur = connection.cursor()
+    #QUERY
+    cur.execute("DELETE FROM Stock WHERE prod_id = 'p1'; DELETE FROM Product WHERE prod_id = 'p1'")
+
+#consitency: rollbacks to maintain integrity
+
+except (Exception, psycopg2.DatabaseError) as err:
+    print(err)
+    print("Transaction could not be completed.")
+    connection.rollback()
+
+#Durability: Closing the connection.
+finally:
+    if connection:
+        connection.commit()
+        cur.close
+        connection.close
+        print("PostgreSQL connection is now closed.")
+
+print("End Transaction")
